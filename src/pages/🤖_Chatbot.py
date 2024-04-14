@@ -1,14 +1,33 @@
 import streamlit as st
+import random
+import time
 
+# 테스트용 임시 응답 설정 
+def response_generator():
+    response = random.choice(
+        [
+            "Hello there! How can I assist you today?",
+            "Hi, human! Is there anything I can help you with?",
+            "Do you need help?",
+        ]
+    )
+    for word in response.split():
+        yield word + " "
+        time.sleep(0.05)
 
 def main_page():
-
+    st.set_page_config(
+        page_icon="🤖",
+        page_title="Build a RAGs bot - Chatbot",
+        layout="centered",
+        initial_sidebar_state="expanded",
+        menu_items=None,
+    )
     st.title("Chat")
     st.info(
         "채팅 ㄱㄱ",
         icon="💬",
     )
-    st.write("---\n")
 
     # 채팅 기록 초기화
     if "messages" not in st.session_state:
@@ -20,7 +39,7 @@ def main_page():
             st.markdown(message["content"])
 
     # 사용자와 챗봇 간의 대화 이력 관리
-    if prompt := st.chat_input("What is up?"):
+    if prompt := st.chat_input("여기에 질문을 작성해주세요!"):
         # 사용자 메시지를 채팅 이력에 추가
         st.session_state.messages.append({"role": "user", "content": prompt})
         # 채팅 메시지 컨테이너에 사용자 메시지 표시
