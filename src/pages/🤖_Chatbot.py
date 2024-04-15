@@ -1,17 +1,25 @@
 import streamlit as st
 import openai
 from llama_index.llms.openai import OpenAI
-try:
-    from llama_index import VectorStoreIndex, ServiceContext, Document, SimpleDirectoryReader
-except ImportError:
-    from llama_index.core import VectorStoreIndex, ServiceContext, Document, SimpleDirectoryReader
+from llama_index.core import (
+    VectorStoreIndex, 
+    ServiceContext, 
+    Document, 
+    SimpleDirectoryReader,
+    Settings,
+)
+from llama_index.core.node_parser import SimpleNodeParser
+from llama_index.core.embeddings import resolve_embed_model
+from llama_index.embeddings.huggingface import HuggingFaceEmbedding
 from config import config
 # import nest_asyncio
 # nest_asyncio.apply()
 
 
 @st.cache_resource(show_spinner=False)
-def initialize_index(model, temperature, documents_dir=config["input_directory"]):
+def initialize_index(model, temperature, config=config):
+    
+    documents_dir = config["input_directory"]
     reader = SimpleDirectoryReader(input_dir=documents_dir, recursive=True)
     docs = reader.load_data()
     
@@ -22,12 +30,19 @@ def initialize_index(model, temperature, documents_dir=config["input_directory"]
             문서 안에 포함된 내용을 활용해서 최대한 자세히 대답해 주세요.
             답변은 한국어로 대답합니다.
         '''
-        
+    
+    embed_model = HuggingFaceEmbedding(
+        model_name = config["embed_model"]["model_name"]
+    )
+    
+    # node_parser = SimpleNodeParser() # 재검토 필요
+    
     llm = OpenAI(model=model, temperature=temperature, system_prompt=PROMPT)
-    service_context = ServiceContext.from_defaults(llm=llm)
+    service_context = ServiceContext.from_defaults(llm=llm, embed_model=embed_model)
     index = VectorStoreIndex.from_documents(
         docs, service_context=service_context
     )
+    
     return index
 
 
@@ -48,9 +63,9 @@ def main_page():
         icon="💬"
     )
     
-    if not st.session_state.get('api_key', ''):
+    if 'api_key' not in st.session_state or not st.session_state.api_key:
         st.error("🚨 Setup page 에서 먼저 API key 를 기입하고 테스트 하고자 하는 문서를 업로드 해주세요")
-        return  # Stop further execution of the function if required settings are missing
+        return  
 
 
     # 채팅 메세지 기록 초기화

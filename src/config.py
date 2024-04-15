@@ -7,7 +7,7 @@ config = {
 
     "embed_model": 
     {
-        "model_name" : "text-embedding-3-small", # "intfloat/e5-small"
+        "model_name" : "intfloat/e5-small", # "intfloat/e5-small" # sentence-transformers/all-MiniLM-l6-v2
         "cache_dir"  : "",
     },
 

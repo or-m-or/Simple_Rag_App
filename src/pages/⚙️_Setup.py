@@ -25,25 +25,26 @@ def setup_page():
     llm_tab, docs_tab = st.tabs(["LLM 설정", "문서 업로드"])
     
     with llm_tab:
-        api_key = st.text_input("👉🏻 OpenAI API Key 를 입력해주세요.", type="password", key='api_key')
+        api_key = st.text_input("👉🏻 OpenAI API Key 를 입력해주세요.", type="password")
         if api_key:
+            st.session_state.api_key = api_key
             os.environ["OPENAI_API_KEY"] = api_key
-            openai.api_key = os.environ["OPENAI_API_KEY"]
+            openai.api_key = api_key
         
         st.session_state.model_name = st.selectbox(
-            "👉🏻 사용할 LLM을 선택해주세요.", ["gpt-3.5-turbo"], # key="model_name"
+            "👉🏻 사용할 LLM을 선택해주세요.", ["gpt-3.5-turbo"], 
         )
         st.session_state.model_temperature = st.slider(
-            "👉🏻 LLM Temperature", min_value=0.0, max_value=1.0, step=0.1, # key="model_temperature"
+            "👉🏻 LLM Temperature", min_value=0.0, max_value=1.0, step=0.1, 
         )
         st.write("---\n")
         # # if st.button("💾 변경 사항 저장 (Index 초기화)", key="init_index"):
         #     st.experimental_rerun()  # 설정 변경 후 업데이트
             
-
+    # 현재는 PDF 만 됨 
     with docs_tab:
         st.markdown("> **파일 선택**\n")
-        uploaded_file = st.file_uploader("👉🏻 새로운 파일 업로드", type=["pdf", "txt", "markdown"])
+        uploaded_file = st.file_uploader("👉🏻 새로운 파일 업로드", type=None)
         with st.spinner(text="문서 업로드 중..."):
             if uploaded_file:
                 document_dir = config['input_directory']
