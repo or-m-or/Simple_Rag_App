@@ -1731,6 +1731,21 @@ llama-index-core = ">=0.10.7,<0.11.0"
 llama-parse = ">=0.4.0,<0.5.0"
 
 [[package]]
+name = "llama-index-vector-stores-chroma"
+version = "0.1.6"
+description = "llama-index vector_stores chroma integration"
+optional = false
+python-versions = ">=3.8.1,<4.0"
+files = [
+    {file = "llama_index_vector_stores_chroma-0.1.6-py3-none-any.whl", hash = "sha256:506b1cb9a7a552ecb3afa70ddf479c1c683fcbfe7313654e3543e62e3ec07eae"},
+    {file = "llama_index_vector_stores_chroma-0.1.6.tar.gz", hash = "sha256:6dff3dc9d79c4039fa46cd528e5e4b6ded6473e5ef632424134491007da4ebdb"},
+]
+
+[package.dependencies]
+chromadb = ">=0.4.22,<0.5.0"
+llama-index-core = ">=0.10.1,<0.11.0"
+
+[[package]]
 name = "llama-parse"
 version = "0.4.0"
 description = "Parse files into RAG-Optimized formats."
@@ -4597,4 +4612,4 @@ testing = ["big-O", "jaraco.functools", "jaraco.itertools", "more-itertools", "p
 [metadata]
 lock-version = "2.0"
 python-versions = "3.11.5"
-content-hash = "5e9ca0cc730a25362a5454cd3c7725a781dfdaf609ebf48ec6f45b1cea2b6adb"
+content-hash = "bbcdf10984ec0937fa9b249526507190ef40d8b8c8306a73ffd6d38313702a55"
