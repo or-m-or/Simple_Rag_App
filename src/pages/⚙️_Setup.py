@@ -6,6 +6,7 @@ from utils import (
 )
 from config import config
 
+
 def setup_page():
     st.set_page_config(
         page_icon="⚙️",
@@ -25,21 +26,30 @@ def setup_page():
     llm_tab, docs_tab = st.tabs(["LLM 설정", "문서 업로드"])
     
     with llm_tab:
-        api_key = st.text_input("👉🏻 OpenAI API Key 를 입력해주세요.", type="password")
-        if api_key:
-            st.session_state.api_key = api_key
-            os.environ["OPENAI_API_KEY"] = api_key
-            openai.api_key = api_key
+        model_options = {
+            "gpt-3.5-turbo": "OpenAI",
+            "gpt-4-turbo": "OpenAI",
+            "yanolja/EEVE-Korean-2.8B-v1.0": "HuggingFace",
+            "KRAFTON/KORani-v3-13B": "HuggingFace",
+        }
+        model_name = st.selectbox("👉🏻 사용할 LLM을 선택해주세요.", list(model_options.keys()))
+        st.session_state.model_provider = model_options[model_name]
+        st.session_state.model_name = model_name
         
-        st.session_state.model_name = st.selectbox(
-            "👉🏻 사용할 LLM을 선택해주세요.", ["gpt-3.5-turbo"], 
-        )
+        
+        if model_options[model_name] == "OpenAI":
+            api_key = st.text_input("👉🏻 OpenAI API Key 를 입력해주세요.", type="password")
+            if api_key:
+                st.session_state.api_key = api_key
+                os.environ["OPENAI_API_KEY"] = api_key
+                openai.api_key = api_key
+        
+        
         st.session_state.model_temperature = st.slider(
             "👉🏻 LLM Temperature", min_value=0.0, max_value=1.0, step=0.1, 
         )
         st.write("---\n")
-        # # if st.button("💾 변경 사항 저장 (Index 초기화)", key="init_index"):
-        #     st.experimental_rerun()  # 설정 변경 후 업데이트
+
             
     # 현재는 PDF 만 됨 
     with docs_tab:
@@ -64,6 +74,23 @@ def setup_page():
         #     st.session_state['input_file'] = os.path.join(os.getcwd(), 'documents', st.session_state['file'])
         # else:
         #     st.warning("파일이 선택되지 않았습니다.")
-    
+
+    with st.sidebar:
+        st.header("현재 상태")
+        with st.container():
+            st.markdown("> LLM 설정")
+            st.write("LLM - ", st.session_state.get('model_name', '설정되지 않음'))
+            st.write("Temperature - ", st.session_state.get('model_temperature', '설정되지 않음'))
+            
+            st.markdown("> API 키")
+            api_key_status = "✅ SUCCESS" if 'api_key' in st.session_state else "❌ FAIL"
+            st.text("OpenAI API Key - {}".format(api_key_status))
+
+            if st.button('세션 초기화'):
+                for key in list(st.session_state.keys()):
+                    del st.session_state[key]
+                st.experimental_rerun()
+
+
 if __name__=="__main__":
     setup_page()

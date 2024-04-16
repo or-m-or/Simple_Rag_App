@@ -1,49 +1,8 @@
 import streamlit as st
-import openai
-from llama_index.llms.openai import OpenAI
-from llama_index.core import (
-    VectorStoreIndex, 
-    ServiceContext, 
-    Document, 
-    SimpleDirectoryReader,
-    Settings,
-)
-from llama_index.core.node_parser import SimpleNodeParser
-from llama_index.core.embeddings import resolve_embed_model
-from llama_index.embeddings.huggingface import HuggingFaceEmbedding
+from generation import initialize_index
 from config import config
 # import nest_asyncio
 # nest_asyncio.apply()
-
-
-@st.cache_resource(show_spinner=False)
-def initialize_index(model, temperature, config=config):
-    
-    documents_dir = config["input_directory"]
-    reader = SimpleDirectoryReader(input_dir=documents_dir, recursive=True)
-    docs = reader.load_data()
-    
-    PROMPT = '''
-            당신은 KT AIVLE School의 질문에 대한 답변을 하는 상담사이며 AIVLE School관련 질문에 대해 답하는 것이 당신의 임무입니다.
-            답변은 사실에 근거해야 하며, 어떠한 환상도 포함되어서는 안됩니다.
-            
-            문서 안에 포함된 내용을 활용해서 최대한 자세히 대답해 주세요.
-            답변은 한국어로 대답합니다.
-        '''
-    
-    embed_model = HuggingFaceEmbedding(
-        model_name = config["embed_model"]["model_name"]
-    )
-    
-    # node_parser = SimpleNodeParser() # 재검토 필요
-    
-    llm = OpenAI(model=model, temperature=temperature, system_prompt=PROMPT)
-    service_context = ServiceContext.from_defaults(llm=llm, embed_model=embed_model)
-    index = VectorStoreIndex.from_documents(
-        docs, service_context=service_context
-    )
-    
-    return index
 
 
 def main_page():
@@ -63,7 +22,25 @@ def main_page():
         icon="💬"
     )
     
-    if 'api_key' not in st.session_state or not st.session_state.api_key:
+    with st.sidebar:
+        st.header("현재 상태")
+        with st.container():
+            st.markdown("> LLM 설정")
+            st.write("LLM - ", st.session_state.get('model_name', '설정되지 않음'))
+            st.write("Temperature - ", st.session_state.get('model_temperature', '설정되지 않음'))
+            
+            st.markdown("> API 키")
+            api_key_status = "✅ SUCCESS" if 'api_key' in st.session_state else "❌ FAIL"
+            st.text("OpenAI API Key - {}".format(api_key_status))
+
+            if st.button('세션 초기화'):
+                for key in list(st.session_state.keys()):
+                    del st.session_state[key]
+                st.experimental_rerun()
+                
+                
+    if st.session_state.get('model_provider') == 'OpenAI' and \
+       ('api_key' not in st.session_state or not st.session_state.api_key):
         st.error("🚨 Setup page 에서 먼저 API key 를 기입하고 테스트 하고자 하는 문서를 업로드 해주세요")
         return  
 
@@ -76,7 +53,11 @@ def main_page():
     
     # 인덱스 및 채팅 엔진 초기화
     if "index" not in st.session_state:
-        st.session_state.index = initialize_index(st.session_state.model_name, st.session_state.model_temperature)
+        st.session_state.index = initialize_index(
+            st.session_state.model_name, 
+            st.session_state.model_temperature,
+            st.session_state.get('model_provider', 'HuggingFace')
+        )
 
     if "chat_engine" not in st.session_state:
         st.session_state.chat_engine = st.session_state.index.as_chat_engine(chat_mode="condense_question", verbose=True)
@@ -98,6 +79,7 @@ def main_page():
                 st.write(response.response)
                 message = {"role": "assistant", "content": response.response}
                 st.session_state.messages.append(message) # 메세지 기록에 새로운 응답 추가
+    
     
 
 
