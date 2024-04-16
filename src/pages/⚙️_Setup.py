@@ -19,25 +19,21 @@ def setup_page():
     st.info(
         "채팅을 시작하기 전 환경 설정을 먼저 해주세요. \n"
         "1. [LLM 설정] 탭에서 사용하고자 하는 LLM과 관련된 옵션을 설정할 수 있습니다.\n"
-        "2. [문서 업로드] 탭에서 질의를 하고자 하는 문서를 업로드 해주세요.", 
+        "2. OpenAI 모델을 사용하려면 OpenAI API Key를 입력해주세요\n"
+        "3. [문서 업로드] 탭에서 질의를 하고자 하는 문서를 업로드 해주세요.\n" 
+        "4. 현재는 PDF, 마크다운 파일만 업로드 가능합니다.",
         icon="🧤"
     )
 
     llm_tab, docs_tab = st.tabs(["LLM 설정", "문서 업로드"])
     
     with llm_tab:
-        model_options = {
-            "gpt-3.5-turbo": "OpenAI",
-            "gpt-4-turbo": "OpenAI",
-            "yanolja/EEVE-Korean-2.8B-v1.0": "HuggingFace",
-            "KRAFTON/KORani-v3-13B": "HuggingFace",
-        }
-        model_name = st.selectbox("👉🏻 사용할 LLM을 선택해주세요.", list(model_options.keys()))
-        st.session_state.model_provider = model_options[model_name]
+        model_name = st.selectbox("👉🏻 사용할 LLM을 선택해주세요.", list(config['llm_predict'].keys()))
+        st.session_state.model_provider = config['llm_predict'][model_name]
         st.session_state.model_name = model_name
         
         
-        if model_options[model_name] == "OpenAI":
+        if config['llm_predict'][model_name] == "OpenAI":
             api_key = st.text_input("👉🏻 OpenAI API Key 를 입력해주세요.", type="password")
             if api_key:
                 st.session_state.api_key = api_key
@@ -54,7 +50,7 @@ def setup_page():
     # 현재는 PDF 만 됨 
     with docs_tab:
         st.markdown("> **파일 선택**\n")
-        uploaded_file = st.file_uploader("👉🏻 새로운 파일 업로드", type=None)
+        uploaded_file = st.file_uploader("👉🏻 새로운 파일 업로드", type=['pdf', 'md'])
         with st.spinner(text="문서 업로드 중..."):
             if uploaded_file:
                 document_dir = config['input_directory']

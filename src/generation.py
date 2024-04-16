@@ -7,14 +7,20 @@ from llama_index.core import (
 )
 from llama_index.llms.huggingface import HuggingFaceLLM
 from llama_index.embeddings.huggingface import HuggingFaceEmbedding
+from pathlib import Path
+from llama_index.readers.file import PDFReader
+from llama_index.readers.file import UnstructuredReader
+from llama_index.readers.file import PyMuPDFReader
 from config import config
 import logging
 import sys
 import torch
+import nest_asyncio
 
 
 logging.basicConfig(stream=sys.stdout, level=logging.INFO)
 logging.getLogger().addHandler(logging.StreamHandler(stream=sys.stdout))
+nest_asyncio.apply()
 
 
 def initialize_index(model, temperature, provider):

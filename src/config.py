@@ -1,7 +1,10 @@
 config = {
     "llm_predict": 
     {
-        "openai_model"  : "gpt-3.5-turbo-0125", # # gpt-4
+        "gpt-3.5-turbo-0125": "OpenAI" ,
+        "gpt-4-turbo": "OpenAI",
+        "yanolja/EEVE-Korean-2.8B-v1.0": "HuggingFace",
+        "KRAFTON/KORani-v3-13B": "HuggingFace",
     },
     "embed_model": 
     {
